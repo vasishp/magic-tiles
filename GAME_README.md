@@ -7,11 +7,12 @@ A rhythm-based tile tapping game built with Expo (React Native) where players mu
 
 ### Core Gameplay
 - **4 Vertical Lanes**: Full-screen layout with equal-width lanes
-- **Falling Tiles**: Tiles spawn from the top and fall at a configurable speed
-- **Tap Detection**: Players tap tiles within a hit zone near the bottom
+- **Falling Tiles**: Tiles spawn from the top and fall at a configurable speed (160px tall for improved tap comfort)
+- **Tap Detection**: Players tap tiles within a hit zone near the bottom (80px tall zone, 160px from bottom)
 - **Score System**: +10 points for each successfully tapped tile
 - **Game Over Condition**: Game ends when a tile reaches the bottom untapped
 - **Hit Zone Indicator**: White line marking the valid tap zone
+- **Dynamic Backgrounds**: 8 vibrant gradient themes that cycle every 7 seconds with smooth crossfade transitions and dynamic vibrance modulation
 
 ### Game Screens
 1. **Start Screen**: Welcome screen with "Start Game" button
@@ -28,7 +29,9 @@ A rhythm-based tile tapping game built with Expo (React Native) where players mu
   └── gameConfig.ts        # Game configuration (speed, lanes, hit zone)
 
 /utils
-  └── tileUtils.ts         # Helper functions (tile generation, collision detection)
+  ├── tileUtils.ts         # Helper functions (tile generation, collision detection)
+  ├── backgroundColors.ts  # Gradient themes and cycling logic (8 vibrant themes)
+  └── colorUtils.ts        # Color conversion and vibrance modulation utilities
 
 /hooks
   └── useGameLoop.ts       # Custom hook managing game loop and state
@@ -65,11 +68,13 @@ export const GAME_CONFIG = {
   numberOfLanes: 4,        // Number of vertical lanes
   tileSpeed: 5,            // Pixels per frame
   spawnInterval: 800,      // Milliseconds between spawns
-  hitZoneY: 100,           // Distance from bottom
+  hitZoneY: 160,           // Distance from bottom
   hitZoneHeight: 80,       // Height of hit zone
 };
 
-export const TILE_HEIGHT = 120;  // Height of each tile
+export const TILE_HEIGHT = 160;  // Height of each tile (increased for better tap comfort)
+export const BACKGROUND_CYCLE_INTERVAL = 7000;  // Gradient cycle interval (7 seconds)
+export const ENABLE_SMOOTH_GRADIENTS = true;    // Enable smooth gradient transitions
 ```
 
 ## 🔧 Technical Implementation
@@ -111,10 +116,11 @@ npm run web
 - Web Browser
 
 ## 🎨 Color Scheme
-- Background: `#1a1a2e` (Dark blue-gray)
-- Primary: `#5f27cd` (Purple)
+- Background: Dynamic gradients (8 vibrant themes cycling every 7 seconds)
+  - Themes include: Lavender Periwinkle, Sunset Glow, Teal Dream, Purple Pulse, Sky Blue Aqua, Fiery Coral, Aurora Mint, Neon Sky
+  - Smooth crossfade transitions with dynamic vibrance modulation (when enabled)
 - Tiles: `#000` (Black)
-- Hit Zone: `#fff` (White)
+- Hit Zone: `#fff` (White, 80% opacity)
 - Score: `#fff` (White)
 
 ## 📋 Next Phases
