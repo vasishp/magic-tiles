@@ -1,5 +1,6 @@
-import { GAME_CONFIG, TILE_HEIGHT } from '@/constants/gameConfig';
+import { TILE_HEIGHT } from '@/constants/gameConfig';
 import { GameState } from '@/types/game';
+import { calculateSpawnInterval, calculateTileSpeed } from '@/utils/speedUtils';
 import { generateTile, isTileMissed } from '@/utils/tileUtils';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -11,18 +12,25 @@ export const useGameLoop = (screenHeight: number) => {
     gameOver: false,
   });
 
-  const animationFrameRef = useRef<number>();
+  const animationFrameRef = useRef<number | undefined>(undefined);
   const lastSpawnTimeRef = useRef<number>(Date.now());
+  const gameStartTimeRef = useRef<number>(0);
 
   // Game loop - update tile positions
   const gameLoop = useCallback(() => {
     if (!gameState.isPlaying || gameState.gameOver) return;
 
+    // Calculate current speed and spawn interval based on elapsed time
+    const currentTime = Date.now();
+    const elapsedTime = currentTime - gameStartTimeRef.current;
+    const currentSpeed = calculateTileSpeed(elapsedTime);
+    const currentSpawnInterval = calculateSpawnInterval(elapsedTime);
+
     setGameState((prevState) => {
-      // Update tile positions
+      // Update tile positions using dynamic speed
       const updatedTiles = prevState.tiles.map((tile) => ({
         ...tile,
-        y: tile.y + GAME_CONFIG.tileSpeed,
+        y: tile.y + currentSpeed,
       }));
 
       // Check for missed tiles (game over condition)
@@ -44,13 +52,28 @@ export const useGameLoop = (screenHeight: number) => {
         (tile) => tile.y < screenHeight + TILE_HEIGHT
       );
 
-      // Spawn new tiles
-      const currentTime = Date.now();
+      // Spawn new tiles using dynamic spawn interval
       let newTiles = [...visibleTiles];
       
-      if (currentTime - lastSpawnTimeRef.current > GAME_CONFIG.spawnInterval) {
-        newTiles.push(generateTile(screenHeight));
-        lastSpawnTimeRef.current = currentTime;
+      if (currentTime - lastSpawnTimeRef.current > currentSpawnInterval) {
+        const newTile = generateTile(screenHeight);
+        
+        // Collision prevention: Check if there's already a tile too close in the same lane
+        const minSafeDistance = TILE_HEIGHT * 1.5; // Minimum distance between tiles in same lane
+        const hasCollision = visibleTiles.some(
+          (existingTile) =>
+            existingTile.lane === newTile.lane &&
+            Math.abs(existingTile.y - newTile.y) < minSafeDistance
+        );
+
+        // Only spawn if there's no collision
+        if (!hasCollision) {
+          newTiles.push(newTile);
+          lastSpawnTimeRef.current = currentTime;
+        } else {
+          // If there's a collision, delay spawn by a short time (half the spawn interval)
+          lastSpawnTimeRef.current = currentTime - currentSpawnInterval / 2;
+        }
       }
 
       return {
@@ -76,13 +99,15 @@ export const useGameLoop = (screenHeight: number) => {
   }, [gameState.isPlaying, gameState.gameOver, gameLoop]);
 
   const startGame = useCallback(() => {
+    const now = Date.now();
     setGameState({
       tiles: [],
       score: 0,
       isPlaying: true,
       gameOver: false,
     });
-    lastSpawnTimeRef.current = Date.now();
+    lastSpawnTimeRef.current = now;
+    gameStartTimeRef.current = now; // Initialize game start time for speed ramping
   }, []);
 
   const handleTileTap = useCallback((tileId: string) => {

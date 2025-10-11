@@ -8,6 +8,11 @@ A rhythm-based tile tapping game built with Expo (React Native) where players mu
 ### Core Gameplay
 - **4 Vertical Lanes**: Full-screen layout with equal-width lanes
 - **Falling Tiles**: Tiles spawn from the top and fall at a configurable speed (160px tall for improved tap comfort)
+- **Progressive Difficulty**: 
+  - Tile speed gradually increases from 5 to 12 pixels/frame over 60 seconds (ease-in curve)
+  - Spawn rate increases from 1.25 to 3.33 tiles/second (800ms → 300ms interval)
+  - Both speed and spawn rate ramp simultaneously for balanced difficulty scaling
+- **Collision Prevention**: Tiles maintain minimum safe distance in same lane to avoid overlap
 - **Tap Detection**: Players tap tiles within a hit zone near the bottom (80px tall zone, 160px from bottom)
 - **Score System**: +10 points for each successfully tapped tile
 - **Game Over Condition**: Game ends when a tile reaches the bottom untapped
@@ -31,7 +36,8 @@ A rhythm-based tile tapping game built with Expo (React Native) where players mu
 /utils
   ├── tileUtils.ts         # Helper functions (tile generation, collision detection)
   ├── backgroundColors.ts  # Gradient themes and cycling logic (8 vibrant themes)
-  └── colorUtils.ts        # Color conversion and vibrance modulation utilities
+  ├── colorUtils.ts        # Color conversion and vibrance modulation utilities
+  └── speedUtils.ts        # Speed ramping calculations (ease-in interpolation)
 
 /hooks
   └── useGameLoop.ts       # Custom hook managing game loop and state
@@ -66,15 +72,25 @@ All game parameters are adjustable in `/constants/gameConfig.ts`:
 ```typescript
 export const GAME_CONFIG = {
   numberOfLanes: 4,        // Number of vertical lanes
-  tileSpeed: 5,            // Pixels per frame
+  tileSpeed: 5,            // Pixels per frame (legacy - overridden by speed ramp)
   spawnInterval: 800,      // Milliseconds between spawns
   hitZoneY: 160,           // Distance from bottom
   hitZoneHeight: 80,       // Height of hit zone
 };
 
 export const TILE_HEIGHT = 160;  // Height of each tile (increased for better tap comfort)
+
+// Background gradients
 export const BACKGROUND_CYCLE_INTERVAL = 7000;  // Gradient cycle interval (7 seconds)
 export const ENABLE_SMOOTH_GRADIENTS = true;    // Enable smooth gradient transitions
+
+// Speed ramping (progressive difficulty)
+export const TILE_INITIAL_SPEED = 5;              // Starting speed (pixels/frame)
+export const TILE_MAX_SPEED = 12;                 // Maximum speed (pixels/frame)
+export const TILE_INITIAL_SPAWN_INTERVAL = 800;   // Starting spawn rate (ms)
+export const TILE_MIN_SPAWN_INTERVAL = 300;       // Maximum spawn rate (ms)
+export const SPEED_RAMP_DURATION = 60;            // Ramp duration (seconds)
+export const ENABLE_SPEED_RAMP = true;            // Enable speed & spawn ramping
 ```
 
 ## 🔧 Technical Implementation
@@ -93,6 +109,20 @@ export const ENABLE_SMOOTH_GRADIENTS = true;    // Enable smooth gradient transi
 - Precise hit zone detection
 - Lane-based tap recognition
 - Miss detection for game over
+
+### Speed & Spawn Rate Ramping (Progressive Difficulty)
+- **Time-based ramping** (not score-based) for predictable difficulty scaling
+- **Dual ramping system**:
+  - Tile speed: 5 → 12 pixels/frame (140% increase)
+  - Spawn rate: 800ms → 300ms interval (167% faster spawning)
+- **Ease-in quadratic interpolation** for smooth, natural acceleration
+- **Collision prevention**: Tiles maintain minimum safe distance (1.5× tile height) in same lane
+- **Performance optimized**:
+  - Speed calculated once per frame (not per tile)
+  - Spawn interval calculated once per spawn check
+  - Uses `useRef` to avoid re-renders
+  - Tiles remain isolated from ramping logic
+- **Feature flag** allows instant toggle for testing/performance tuning (`ENABLE_SPEED_RAMP`)
 
 ## 🚀 Running the Game
 
@@ -126,7 +156,8 @@ npm run web
 ## 📋 Next Phases
 
 ### Phase 2: Animations & Speed
-- [ ] Gradually increase tile speed
+- [x] Gradually increase tile speed (✅ Implemented with ease-in curve)
+- [x] Gradually increase spawn rate (✅ Implemented with collision prevention)
 - [ ] Smooth tile animations with react-native-reanimated
 - [ ] Tile bounce/fade effects on miss
 
