@@ -18,3 +18,18 @@ export const TILE_GAP = 10;
  */
 export const BACKGROUND_CYCLE_INTERVAL = 7000;
 
+/**
+ * Enable smooth gradient transitions and dynamic vibrance modulation
+ * When true: Gradients crossfade over 2 seconds with subtle vibrance shifts
+ * When false: Gradients switch instantly with no vibrance modulation
+ * Default: false (for better performance and to avoid flicker)
+ * 
+ * Performance impact when enabled:
+ * - Dual gradient rendering (2 LinearGradient components)
+ * - Vibrance updates every 100ms
+ * - Reanimated opacity animations
+ * 
+ * Set to true only if device can handle the extra rendering load
+ */
+export const ENABLE_SMOOTH_GRADIENTS = true;
+

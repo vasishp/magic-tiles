@@ -1,5 +1,7 @@
 // file: utils/backgroundColors.ts
 
+import { modulateGradientColors } from './colorUtils';
+
 /**
  * Defines gradient color themes that shift as score increases
  */
@@ -66,6 +68,8 @@ export const GRADIENT_COUNT = VIBRANT_GRADIENTS.length;
  * Uses modular arithmetic to ensure index is always within bounds
  * 
  * @param index - Gradient index (will be wrapped using modulo)
+ * @param enableVibrance - Optional: apply dynamic vibrance modulation
+ * @param time - Optional: time in ms for vibrance calculation
  * @returns GradientTheme with colors and locations
  * 
  * @example
@@ -79,9 +83,23 @@ export const GRADIENT_COUNT = VIBRANT_GRADIENTS.length;
  * - Index 7: Neon Sky
  * - Index 8+: Wraps back to 0 and repeats
  */
-export const getGradientByIndex = (index: number): GradientTheme => {
+export const getGradientByIndex = (
+  index: number,
+  enableVibrance: boolean = false,
+  time: number = 0
+): GradientTheme => {
   const safeIndex = index % VIBRANT_GRADIENTS.length;
-  return VIBRANT_GRADIENTS[safeIndex];
+  const baseGradient = VIBRANT_GRADIENTS[safeIndex];
+
+  if (enableVibrance && time > 0) {
+    const modulatedColors = modulateGradientColors(baseGradient.colors, time);
+    return {
+      colors: modulatedColors as any,
+      locations: baseGradient.locations,
+    };
+  }
+
+  return baseGradient;
 };
 
 /**
