@@ -11,3 +11,10 @@ export const GAME_CONFIG: GameConfig = {
 export const TILE_HEIGHT = 120;
 export const TILE_GAP = 10;
 
+/**
+ * Background gradient cycle interval in milliseconds
+ * Determines how often the background gradient changes during gameplay
+ * Default: 7000ms (7 seconds) - provides smooth, non-distracting transitions
+ */
+export const BACKGROUND_CYCLE_INTERVAL = 7000;
+

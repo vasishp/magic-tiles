@@ -1,3 +1,7 @@
+// file: screens/StartScreen.tsx
+
+import { DEFAULT_GRADIENT } from '@/utils/backgroundColors';
+import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -8,6 +12,13 @@ interface StartScreenProps {
 export const StartScreen: React.FC<StartScreenProps> = ({ onStartGame }) => {
   return (
     <View style={styles.container}>
+      {/* Gradient Background */}
+      <LinearGradient
+        colors={DEFAULT_GRADIENT.colors as any}
+        locations={DEFAULT_GRADIENT.locations as any}
+        style={StyleSheet.absoluteFillObject}
+      />
+
       <View style={styles.content}>
         <Text style={styles.title}>Magic Tiles</Text>
         <Text style={styles.subtitle}>Tap the tiles, don't miss any!</Text>
@@ -23,7 +34,6 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStartGame }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a2e',
     justifyContent: 'center',
     alignItems: 'center',
   },
